@@ -1,0 +1,620 @@
+:root {
+    --orange: #ff8c42;
+    --dark-orange: #e56b1f;
+    --gray: #f7f7f7;
+    --text-dark: #333;
+    --white: #fff;
+    --overlay: rgba(0, 0, 0, 0.6); 
+}
+
+/* RESET */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Cairo', sans-serif;
+}
+/* NAVBAR  */
+.navbar {
+    display: flex;
+    flex-direction: column; 
+    justify-content: center;
+    align-items: center;
+    
+    background: rgba(255, 255, 255, 0.95); 
+    backdrop-filter: blur(10px);
+    
+    padding: 15px 0;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); 
+    transition: all 0.3s ease;
+}
+
+.navbar .logo {
+    font-size: 1.8rem;
+    font-weight: 800;
+    margin-bottom: 8px;
+    letter-spacing: 1.5px;
+    color: #ff8c42; 
+    animation: fadeInDown 0.8s ease;
+}
+
+.navbar .nav-links {
+    list-style: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 35px;
+    padding: 0;
+    animation: fadeInUp 0.8s ease;
+}
+
+.navbar .nav-links a {
+    color: #444; 
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 1.05rem;
+    position: relative;
+    transition: 0.3s;
+}
+
+
+.navbar .nav-links a::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 3px;
+    bottom: -6px;
+    left: 50%;
+    background-color: #ff8c42; 
+    transition: all 0.3s ease;
+    transform: translateX(-50%);
+    border-radius: 5px;
+}
+
+.navbar .nav-links a:hover::after,
+.navbar .nav-links a.active::after {
+    width: 100%;
+}
+
+.navbar .nav-links a:hover,
+.navbar .nav-links a.active {
+    color: #ff8c42;
+}
+
+@keyframes fadeInDown {
+    from { opacity: 0; transform: translateY(-15px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 768px) {
+    .navbar .nav-links {
+        gap: 15px;
+        font-size: 0.9rem;
+    }
+}
+
+/* HERO SECTION - */
+.hero {
+    min-height: 80vh;
+    background: linear-gradient(var(--overlay), var(--overlay)), 
+                url('https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?q=80&w=2070&auto=format&fit=crop'); /* صورة فندقية فخمة */
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 50px 20px;
+    text-align: center;
+    color: var(--white); 
+}
+
+.hero-content {
+    max-width: 800px;
+}
+
+.hero h1 {
+    font-size: 3rem;
+    color: var(--white); 
+    text-shadow: 2px 2px 10px rgba(0,0,0,0.5);
+}
+
+.hero h1 span {
+    color: var(--orange);
+}
+
+.hero p {
+    margin: 20px 0;
+    font-size: 1.3rem;
+    color: #eee;
+    text-shadow: 1px 1px 5px rgba(0,0,0,0.5);
+}
+
+
+.btn {
+    background: var(--orange);
+    color: var(--white);
+    padding: 12px 25px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: 0.3s;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.btn:hover {
+    background: var(--dark-orange);
+    transform: scale(1.05);
+}
+
+.features {
+    text-align: center;
+    padding: 60px 20px;
+    background: var(--white);
+}
+
+.features h2 {
+    color: var(--text-dark);
+    margin-bottom: 40px;
+}
+
+.feature-container {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.feature-box {
+    background: var(--gray);
+    padding: 25px;
+    border-radius: 12px;
+    width: 300px;
+    transition: 0.3s;
+}
+
+.feature-box:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.filters {
+    background: var(--gray);
+    padding: 40px;
+    text-align: center;
+}
+
+.filter-container {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.filters select,
+.filters input {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+}
+
+.hotels-list {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 25px;
+    padding: 40px;
+    background: var(--white);
+}
+
+.hotel-card {
+    background: var(--gray);
+    border-radius: 12px;
+    width: 300px;
+    padding: 20px;
+    transition: 0.3s;
+}
+
+.hotel-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.hotel-card h3 {
+    color: var(--orange);
+    margin-bottom: 10px;
+}
+
+.hotel-card p {
+    color: #444;
+    margin: 5px 0;
+}
+
+.hotel-img {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    border-radius: 10px;
+    margin-bottom: 10px;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    justify-content: center;
+    align-items: center;
+    z-index: 1001;
+}
+
+.modal-content {
+    background: #fff;
+    padding: 30px;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 400px;
+    text-align: right;
+    animation: fadeIn 0.3s ease;
+}
+
+.close {
+    float: left;
+    font-size: 22px;
+    cursor: pointer;
+    color: var(--orange);
+}
+
+/*   التجاوب مع الموبايل  */
+@media (max-width: 768px) {
+    .navbar {
+        padding: 15px 20px;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .navbar .nav-links {
+        gap: 10px;
+        font-size: 0.9rem;
+    }
+
+    .hero h1 {
+        font-size: 1.8rem;
+    }
+
+    .hero p {
+        font-size: 1rem;
+    }
+
+    .feature-box, .hotel-card {
+        width: 100%; 
+        max-width: 350px;
+    }
+
+    .filters {
+        padding: 20px;
+    }
+
+    .filter-container select, .filters input {
+        width: 100%; 
+    }
+}
+
+footer {
+    text-align: center;
+    padding: 20px;
+    background: var(--orange);
+    color: var(--white);
+    margin-top: 40px;
+}
+
+.hotel-card .desc {
+    font-size: 14px;
+    color: #444;
+    margin-top: 6px;
+    line-height: 1.5;
+    transition: color 0.3s ease;
+}
+/*   تنسيق واجهة الحجز */
+.modal {
+    display: none; 
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7); 
+    backdrop-filter: blur(5px);
+    justify-content: center;
+    align-items: center;
+    z-index: 9999; 
+}
+
+.modal-content {
+    background: var(--white);
+    padding: 30px;
+    border-radius: 15px;
+    width: 90%;
+    max-width: 450px; 
+    position: relative;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    text-align: right; 
+}
+
+.modal-content h3 {
+    color: var(--orange);
+    margin-bottom: 20px;
+    border-bottom: 2px solid var(--gray);
+    padding-bottom: 10px;
+}
+
+.modal-content form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px; 
+}
+
+.modal-content label {
+    font-weight: bold;
+    font-size: 0.9rem;
+    color: var(--text-dark);
+    margin-bottom: -10px; 
+}
+
+.modal-content input {
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 1rem;
+    outline: none;
+    transition: 0.3s;
+}
+
+.modal-content input:focus {
+    border-color: var(--orange);
+    box-shadow: 0 0 5px rgba(255, 140, 66, 0.3);
+}
+
+.modal-content input[readonly] {
+    background-color: #eee; 
+    cursor: not-allowed;
+}
+
+.close {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    font-size: 24px;
+    cursor: pointer;
+    color: #999;
+    transition: 0.3s;
+}
+
+.close:hover {
+    color: var(--orange);
+}
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* تطبيقها على كروت الفنادق */
+.hotel-card {
+    animation: fadeInUp 0.6s ease-out;
+}
+/* تنسيق الفاصل بين الأقسام */
+.section-divider {
+    text-align: center;
+    margin: 50px 0 30px;
+    position: relative;
+    width: 100%;
+}
+.hotel-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+.hotel-card:hover {
+    transform: translateY(-10px); 
+    box-shadow: 0 10px 20px rgba(0,0,0,0.2); 
+}
+
+.section-divider h2 {
+    font-size: 2rem;
+    color: var(--primary-blue); 
+    background: var(--white);
+    display: inline-block;
+    padding: 0 20px;
+    position: relative;
+    z-index: 2;
+}
+
+.section-divider::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 10%;
+    right: 10%;
+    height: 2px;
+    background: var(--orange); 
+    z-index: 1;
+}
+/*  تنسيق الشات بوت  */
+#chat-circle {
+    position: fixed;
+    bottom: 25px;
+    right: 25px;
+    width: 60px;
+    height: 60px;
+    background: #ff8c42;
+    border-radius: 50%;
+    color: white;
+    font-size: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    z-index: 9999;
+    transition: 0.3s;
+}
+
+#chat-box-container {
+    position: fixed;
+    bottom: 100px;
+    right: 25px;
+    width: 320px;
+    height: 450px;
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 5px 25px rgba(0,0,0,0.2);
+    display: none; 
+    flex-direction: column;
+    z-index: 9999;
+    overflow: hidden;
+    border: 1px solid #ddd;
+}
+
+.chat-header { background: #ff8c42; color: white; padding: 15px; text-align: center; font-weight: bold; }
+#chat-messages { flex: 1; padding: 15px; overflow-y: auto; background: #f9f9f9; display: flex; flex-direction: column; gap: 10px; }
+.msg { padding: 8px 12px; border-radius: 10px; font-size: 14px; max-width: 80%; }
+.bot { background: #eee; align-self: flex-start; }
+.user { background: #ff8c42; color: white; align-self: flex-end; }
+.chat-input-area { display: flex; padding: 10px; border-top: 1px solid #eee; }
+.chat-input-area input { flex: 1; border: 1px solid #ddd; padding: 8px; border-radius: 5px; outline: none; }
+.chat-input-area button { background: #ff8c42; color: white; border: none; padding: 0 10px; margin-right: 5px; border-radius: 5px; cursor: pointer; }
+
+.booking-lookup-container {
+    padding: 80px 20px;
+    background-color: var(--gray); 
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.lookup-card {
+    background: var(--white);
+    padding: 40px;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    width: 100%;
+    max-width: 600px;
+    text-align: center;
+    border: 1px solid #eee;
+}
+
+.lookup-header h2 {
+    color: var(--text-dark);
+    font-size: 1.8rem;
+    margin-bottom: 10px;
+}
+
+.lookup-header p {
+    color: #666;
+    margin-bottom: 30px;
+}
+
+.lookup-form {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.lookup-form input {
+    flex: 1;
+    padding: 15px;
+    border: 2px solid #eee;
+    border-radius: 12px;
+    font-size: 1rem;
+    outline: none;
+    transition: 0.3s;
+}
+
+.lookup-form input:focus {
+    border-color: var(--orange);
+}
+
+.btn-lookup {
+    background: var(--orange);
+    color: white;
+    border: none;
+    padding: 0 25px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: 0.3s;
+}
+
+.btn-lookup:hover {
+    background: var(--dark-orange);
+    transform: translateY(-2px);
+}
+
+/* تنسيق النتائج */
+.results-area {
+    margin-top: 20px;
+    text-align: right;
+}
+
+.booking-item {
+    background: #fdfdfd;
+    border-right: 4px solid var(--orange);
+    padding: 15px;
+    margin-bottom: 10px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+}
+/* تنسيق زر الإلغاء  */
+.btn-cancel {
+    margin-top: 15px;
+    background: linear-gradient(135deg, #ff4b2b 0%, #ff416c 100%); /* لون متدرج عصري */
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 50px; 
+    cursor: pointer;
+    width: 100%;
+    font-weight: bold;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: all 0.3s ease; 
+    box-shadow: 0 4px 15px rgba(255, 65, 108, 0.3); 
+}
+
+.btn-cancel:hover {
+    background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);
+    transform: translateY(-3px); 
+    box-shadow: 0 6px 20px rgba(255, 65, 108, 0.5);
+}
+
+
+.btn-cancel:active {
+    transform: translateY(-1px);
+}
+
+.btn-cancel .icon {
+    font-size: 1.1rem;
+}

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Syrian Hotels | الرئيسية</title>
+    <link rel="stylesheet" href="style/syle.css">
+</head>
+<body>
+    <!--  الناف بار -->
+  <nav class="navbar">
+        <div class="logo">Syrian Hotels</div>
+        <ul class="nav-links">
+            <li><a href="index.html">الرئيسية</a></li>
+            <li><a href="hotels.html">الفنادق</a></li>
+            <li><a href="explore.html" class=>استكشف سوريا</a></li>
+        </ul>
+    </nav>
+
+    <!--  القسم الترحيبي -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1>مرحباً بكم في <span>Syrian Hotels</span></h1>
+            <p>استكشف أجمل الفنادق في سوريا واحجز إقامتك بسهولة، لتعيش تجربة لا تُنسى في كل محافظة سورية.</p>
+            <a href="hotels.html" class="btn">ابدأ الحجز الآن</a>
+        </div>
+       
+    </section>
+
+    <!-- المميزات -->
+    <section class="features">
+        <h2>لماذا تختار موقعنا؟</h2>
+        <div class="feature-container">
+            <div class="feature-box">
+                <h3>سهولة الاستخدام</h3>
+                <p>واجهة بسيطة وسريعة تساعدك في الوصول إلى الفندق المثالي بسرعة.</p>
+            </div>
+            <div class="feature-box">
+                <h3>أفضل الأسعار</h3>
+                <p>نوفر لك خيارات متعددة تناسب جميع الميزانيات دون أي رسوم إضافية.</p>
+            </div>
+            <div class="feature-box">
+                <h3>تجربة موثوقة</h3>
+                <p>جميع المعلومات محدثة وموثوقة من الفنادق مباشرة لضمان رضاك الكامل.</p>
+            </div>
+        </div>
+    </section>
+    <section class="booking-lookup-container">
+    <div class="lookup-card">
+        <div class="lookup-header">
+            <i class="fas fa-calendar-check"></i>
+            <h2>تتبع حجزك</h2>
+            <p>أدخل بريدك الإلكتروني لعرض تفاصيل إقامتك القادمة</p>
+        </div>
+        <div class="lookup-form">
+            <input type="email" id="searchEmail" placeholder="example@mail.com">
+            <button class="btn-lookup" onclick="getMyBookings()">
+                <span>بحث عن حجز</span>
+            </button>
+        </div>
+        <div id="userBookingsResults" class="results-area"></div>
+    </div>
+</section>
+
+    <!--  اخر الصفحة -->
+    <footer>
+        <p>مشروع طلابي حجز فنادق في سوريا</p>
+    </footer>
+    <div id="chat-circle" onclick="btnToggleChat()">...</div>
+
+<div id="chat-box-container">
+    <div class="chat-header">  مساعدك في Syrian Hotels</div>
+    <div id="chat-messages">
+        <div class="msg bot">أهلاً بك! أنا مساعدك الذكي، كيف أساعدك في رحلتك؟</div>
+    </div>
+    <div class="chat-input-area">
+        <input type="text" id="ai-user-input" placeholder="اكتب سؤالك هنا...">
+        <button onclick="askArtificialIntelligence()">إرسال</button>
+    </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
