@@ -60,7 +60,7 @@ app.post("/bookings", (req, res) => {
 // --- الشات بوت ---
 app.post('/ask-ai', async (req, res) => {
     const { prompt } = req.body;
-    const GROQ_API_KEY = "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"; 
+   const GROQ_API_KEY = process.env.GROQ_API_KEY;
 
     try {
         const response = await axios.post(
@@ -110,4 +110,5 @@ app.delete('/cancel-booking/:id', (req, res) => {
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`🚀 Server running on port ${PORT}`);
+
 });
