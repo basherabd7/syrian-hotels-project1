@@ -73,12 +73,23 @@ initDatabase();
 
 app.get("/", (req, res) => { res.sendFile(path.join(__dirname, "index.html")); });
 
-// --- تعديل جلب الفنادق لضمان عدم ظهور undefined ---
+// --- تعديل جلب الفنادق لضمان قراءة البيانات مهما كانت حالة الأحرف ---
 app.get("/hotels", async (req, res) => {
     try {
-        // نستخدم AS لتوحيد الأسماء حتى لو كانت مخزنة بأحرف صغيرة في القاعدة
-        const [results] = await db.query("SELECT Id, Name, Province AS Province, Stars, Price AS Price, Description, Image FROM hotels");
-        res.json(results);
+        const [results] = await db.query("SELECT * FROM hotels");
+        
+        // تحويل البيانات يدوياً لضمان توافقها مع الـ Frontend
+        const formattedResults = results.map(hotel => ({
+            Id: hotel.Id || hotel.id,
+            Name: hotel.Name || hotel.name,
+            Province: hotel.Province || hotel.province,
+            Stars: hotel.Stars || hotel.stars,
+            Price: hotel.Price || hotel.price,
+            Description: hotel.Description || hotel.description,
+            Image: hotel.Image || hotel.image
+        }));
+        
+        res.json(formattedResults);
     } catch (err) { res.status(500).send(err); }
 });
 
