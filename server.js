@@ -11,7 +11,7 @@ app.use(express.json());
 // تشغيل السيرفر ليخدم ملفات الموقع الأمامية من المجلد الحالي
 app.use(express.static(path.join(__dirname)));
 
-// --- إعدادات الاتصال بالسيرفر السحابي (Railway) ---
+// --- إعدادات الاتصال بالسيرفر السحابي  ---
 const db = mysql.createConnection({
     host: "switchback.proxy.rlwy.net", 
     user: "root", 
