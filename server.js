@@ -10,7 +10,7 @@ app.use(express.json());
 
 app.use(express.static(path.join(__dirname)));
 
-// --- الربط بـ Aiven عبر المتغير DATABASE_URL ---
+// --- الربط بـ Aiven ---
 const pool = mysql.createPool({
     uri: process.env.DATABASE_URL,
     waitForConnections: true,
@@ -20,10 +20,9 @@ const pool = mysql.createPool({
 
 const db = pool.promise();
 
-// --- وظيفة بناء الجداول وحقن البيانات تلقائياً ---
+// --- وظيفة بناء الجداول وحقن البيانات مع مراعاة حالة الأحرف (Case Sensitivity) ---
 async function initDatabase() {
     try {
-        //  إنشاء جدول الفنادق
         await db.query(`
             CREATE TABLE IF NOT EXISTS hotels (
                 Id INT PRIMARY KEY,
@@ -36,7 +35,6 @@ async function initDatabase() {
             )
         `);
 
-        // 2. إنشاء جدول الحجوزات 
         await db.query(`
             CREATE TABLE IF NOT EXISTS bookings (
                 Id INT AUTO_INCREMENT PRIMARY KEY,
@@ -50,7 +48,6 @@ async function initDatabase() {
             )
         `);
 
-        //  إضافة بيانات الفنادق 
         const [rows] = await db.query("SELECT COUNT(*) as count FROM hotels");
         if (rows[0].count === 0) {
             const hotelsData = [
@@ -69,92 +66,53 @@ async function initDatabase() {
                 [13, "فندق الصالح", "طرطوس", 4, 110, "يقدم تجربة فاخرة مع مسبح داخلي ومركز لياقة بدنية وإطلالة خلابة على الساحل السوري.", "img/الصالح.jpg"]
             ];
             await db.query("INSERT INTO hotels (Id, Name, Province, Stars, Price, Description, Image) VALUES ?", [hotelsData]);
-            console.log("✅ تم بناء الجداول وحقن البيانات بنجاح!");
         }
-    } catch (err) {
-        console.error("❌ خطأ في تهيئة القاعدة: " + err.message);
-    }
+    } catch (err) { console.error("Init Error: " + err.message); }
 }
-
 initDatabase();
 
-app.get("/", (req, res) => {
-    res.sendFile(path.join(__dirname, "index.html"));
-});
+app.get("/", (req, res) => { res.sendFile(path.join(__dirname, "index.html")); });
 
-// جلب الفنادق
+// --- تعديل جلب الفنادق ليتوافق مع أسماء الأعمدة في الواجهة الأمامية ---
 app.get("/hotels", async (req, res) => {
     try {
-        const [results] = await db.query("SELECT * FROM hotels");
+        // نستخدم AS لضمان تطابق الأسماء مع ما يطلبه الجافاسكريبت في الصفحة
+        const [results] = await db.query("SELECT Id, Name, Province, Stars, Price, Description, Image FROM hotels");
         res.json(results);
-    } catch (err) {
-        res.status(500).send(err);
-    }
+    } catch (err) { res.status(500).send(err); }
 });
 
-// إضافة حجز 
 app.post("/bookings", async (req, res) => {
     const { hotelId, fullName, email, checkIn, checkOut, totalPrice } = req.body;
     try {
-        const [result] = await db.query(
-            "INSERT INTO bookings (HotelId, FullName, Email, CheckIn, CheckOut, TotalPrice) VALUES (?, ?, ?, ?, ?, ?)", 
-            [hotelId, fullName, email, checkIn, checkOut, totalPrice]
-        );
-        res.json({ message: "تم الحجز بنجاح", id: result.insertId });
-    } catch (err) {
-        res.status(500).send(err);
-    }
+        await db.query("INSERT INTO bookings (HotelId, FullName, Email, CheckIn, CheckOut, TotalPrice) VALUES (?, ?, ?, ?, ?, ?)", 
+        [hotelId, fullName, email, checkIn, checkOut, totalPrice]);
+        res.json({ message: "تم الحجز بنجاح" });
+    } catch (err) { res.status(500).send(err); }
 });
 
-// الشات بوت
 app.post('/ask-ai', async (req, res) => {
     const { prompt } = req.body;
     const GROQ_API_KEY = process.env.GROQ_API_KEY;
     try {
-        const response = await axios.post(
-            "https://api.groq.com/openai/v1/chat/completions",
-            {
-                model: "llama-3.3-70b-versatile",
-                messages: [
-                    { role: "system", content: "أنت مساعد سياحي خبير في سوريا. أجب باللغة العربية بأسلوب ودود ومختصر." },
-                    { role: "user", content: prompt }
-                ]
-            },
-            { headers: { "Authorization": `Bearer ${GROQ_API_KEY}`, "Content-Type": "application/json" } }
-        );
+        const response = await axios.post("https://api.groq.com/openai/v1/chat/completions", {
+            model: "llama-3.3-70b-versatile",
+            messages: [{ role: "system", content: "أنت مساعد سياحي خبير في سوريا." }, { role: "user", content: prompt }]
+        }, { headers: { "Authorization": `Bearer ${GROQ_API_KEY}` } });
         res.json({ reply: response.data.choices[0].message.content });
-    } catch (error) {
-        res.status(500).json({ reply: "عذراً، حدث خطأ في معالجة طلبك." });
-    }
+    } catch (error) { res.status(500).json({ reply: "عذراً، حدث خطأ." }); }
 });
 
-// جلب حجوزاتي
 app.get('/my-bookings/:email', async (req, res) => {
-    const email = req.params.email;
     try {
-        const [results] = await db.query(`
-            SELECT b.*, h.Name AS hotelName 
-            FROM bookings b 
-            LEFT JOIN hotels h ON b.HotelId = h.Id 
-            WHERE b.Email = ?`, [email]);
+        const [results] = await db.query("SELECT b.*, h.Name AS hotelName FROM bookings b LEFT JOIN hotels h ON b.HotelId = h.Id WHERE b.Email = ?", [req.params.email]);
         res.json(results);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
+    } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// إلغاء حجز
 app.delete('/cancel-booking/:id', async (req, res) => {
-    const bookingId = req.params.id;
-    try {
-        await db.query("DELETE FROM bookings WHERE Id = ?", [bookingId]);
-        res.json({ message: "تم إلغاء الحجز بنجاح" });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
+    try { await db.query("DELETE FROM bookings WHERE Id = ?", [req.params.id]); res.json({ message: "تم الإلغاء" }); }
+    catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`🚀 Server running on port ${PORT}`);
-});
+app.listen(process.env.PORT || 3000);
