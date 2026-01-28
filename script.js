@@ -3,7 +3,7 @@ let hotels = [
   { Id: 1, Name: "فندق داماروز", Province: "دمشق", Stars: 5, Price: 120, Description: "من أرقى فنادق العاصمة، يتميز بإطلالة بانورامية على دمشق وخدمة راقية تناسب رجال الأعمال والسياح.", Image: "img/داماروز.jpg" },
   { Id: 2, Name: "فندق زنوبيا", Province: "اللاذقية", Stars: 3, Price: 80, Description: "قريب من البحر في مدينة اللاذقية ذات الطبيعة الساحرة.", Image: "img/زنوبيا.jpg" },
   { Id: 3, Name: "فندق انترادوس", Province: "طرطوس", Stars: 4, Price: 60, Description: "فندق ومطعم مناسب للعائلات والاطفال يوجد فيه العديد من الخدمات", Image: "img/انترادوس.jpg" },
-  { Id: 4, Name: "فندق غولدن مزة", Province: "دمشق", Stars: 5, Price: 100, Description: "فن الضيافة الحقيقي في أحدث و أفخم فندق خمس نجوم في دمشق", Image: "img/غولدن_مزة.jpg" },
+  { Id: 4, Name: "فندق غولدن مزة", Province: "دمشق", Stars: 5, Price: 100, Description: "فن الضيافة الحقيقي في أحدث و أفخم فندق خمس نوجم في دمشق", Image: "img/غولدن_مزة.jpg" },
   { Id: 5, Name: "فندق شهباء حلب", Province: "حلب", Stars: 4, Price: 130, Description: "يقع في قلب المدينة القديمة، يوفر تجربة تراثية فاخرة مع جلسات شرقية مميزة.", Image: "img/شهباء_حلب.jpg" },
   { Id: 6, Name: "فندق ريفيرا", Province: "اللاذقية", Stars: 3, Price: 55, Description: "خيار اقتصادي ومريح، قريب من الميناء ومناسب للعائلات الصغيرة.", Image: "img/ريفيرا.jpg" },
   { Id: 7, Name: "منتجع جونادا", Province: "طرطوس", Stars: 5, Price: 110, Description: "منتجع فخم بإطلالة بحرية ساحرة ومسبح خاص وخدمات سياحية راقية.", Image: "img/جونادا.jpg" },
@@ -15,22 +15,22 @@ let hotels = [
   { Id: 13, Name: "فندق الصالح", Province: "طرطوس", Stars: 4, Price: 110, Description: "يقدم تجربة فاخرة مع مسبح داخلي ومركز لياقة بدنية وإطلالة خلابة على الساحل السوري.", Image: "img/الصالح.jpg" }
 ];
 
-// 2. جلب البيانات الفعلية من السيرفر (تم تعديل الرابط ليعمل على Railway)
+// 2. جلب البيانات الفعلية من السيرفر (تم تصحيح Province و Price)
 async function fetchHotels() {
     try {
         const response = await fetch('/hotels'); 
         const data = await response.json();
         if (data && data.length > 0) {
             hotels = data.map(dbHotel => {
-                const localInfo = hotels.find(h => h.Id === dbHotel.Id);
+                const localInfo = hotels.find(h => h.Id === (dbHotel.Id || dbHotel.id));
                 return {
-                    Id: dbHotel.Id,
-                    Name: dbHotel.Name,
-                    Province: dbHotel.Location, 
-                    Stars: dbHotel.Stars,
-                    Price: dbHotel.PricePerNight, 
-                    Description: dbHotel.Description,
-                    Image: localInfo ? localInfo.Image : "img/default.jpg" 
+                    Id: dbHotel.Id || dbHotel.id,
+                    Name: dbHotel.Name || dbHotel.name,
+                    Province: dbHotel.Province || dbHotel.province, // تعديل: من Location إلى Province
+                    Stars: dbHotel.Stars || dbHotel.stars,
+                    Price: dbHotel.Price || dbHotel.price,           // تعديل: من PricePerNight إلى Price
+                    Description: dbHotel.Description || dbHotel.description,
+                    Image: localInfo ? localInfo.Image : (dbHotel.Image || dbHotel.image || "img/default.jpg") 
                 };
             });
         }
@@ -121,7 +121,7 @@ function calculateTotal() {
 document.getElementById("checkIn").addEventListener("change", calculateTotal);
 document.getElementById("checkOut").addEventListener("change", calculateTotal);
 
-// 7. إرسال الحجز للسيرفر (تم تعديل الرابط ليعمل على Railway)
+// 7. إرسال الحجز للسيرفر
 bookingForm.addEventListener("submit", async (e) => {
     e.preventDefault();
     const bookingData = {
@@ -154,7 +154,7 @@ bookingForm.addEventListener("submit", async (e) => {
 
 fetchHotels();
 
-// وظائف الشات بوت الذكي (تم تعديل الرابط ليعمل على Railway)
+// وظائف الشات بوت الذكي 
 function btnToggleChat() {
     const chatWindow = document.getElementById('chat-box-container');
     if (chatWindow) {
@@ -187,7 +187,7 @@ async function askArtificialIntelligence() {
     box.scrollTop = box.scrollHeight;
 }
 
-// جلب حجوزاتي (تم تعديل الرابط ليعمل على Railway)
+// جلب حجوزاتي
 async function getMyBookings() {
     const email = document.getElementById('searchEmail').value.trim();
     const resultsDiv = document.getElementById('userBookingsResults');
@@ -209,8 +209,8 @@ async function getMyBookings() {
             const bId = b.Id; 
             const bHotel = b.hotelName || "فندق محجوز";
             const bPrice = b.TotalPrice; 
-            const rawIn = b.CheckIn;     
-            const rawOut = b.CheckOut; 
+            const rawIn = b.CheckIn;      
+            const rawOut = b.CheckOut;  
 
             const startDate = rawIn ? new Date(rawIn).toLocaleDateString('ar-SY') : "غير محدد";
             const endDate = rawOut ? new Date(rawOut).toLocaleDateString('ar-SY') : "غير محدد";
@@ -236,7 +236,7 @@ async function getMyBookings() {
     }
 }
 
-// إلغاء الحجز (تم تعديل الرابط ليعمل على Railway)
+// إلغاء الحجز 
 async function cancelBooking(id) {
     if (!id || id === 'undefined') return alert("عذراً، معرف الحجز غير صحيح");
     if (!confirm("هل أنت متأكد من إلغاء الحجز رقم #" + id + "؟")) return;
