@@ -20,7 +20,7 @@ const pool = mysql.createPool({
 
 const db = pool.promise();
 
-// --- وظيفة بناء الجداول وحقن البيانات مع مراعاة حالة الأحرف (Case Sensitivity) ---
+// --- وظيفة بناء الجداول وحقن البيانات ---
 async function initDatabase() {
     try {
         await db.query(`
@@ -73,11 +73,11 @@ initDatabase();
 
 app.get("/", (req, res) => { res.sendFile(path.join(__dirname, "index.html")); });
 
-// --- تعديل جلب الفنادق ليتوافق مع أسماء الأعمدة في الواجهة الأمامية ---
+// --- تعديل جلب الفنادق لضمان عدم ظهور undefined ---
 app.get("/hotels", async (req, res) => {
     try {
-        // نستخدم AS لضمان تطابق الأسماء مع ما يطلبه الجافاسكريبت في الصفحة
-        const [results] = await db.query("SELECT Id, Name, Province, Stars, Price, Description, Image FROM hotels");
+        // نستخدم AS لتوحيد الأسماء حتى لو كانت مخزنة بأحرف صغيرة في القاعدة
+        const [results] = await db.query("SELECT Id, Name, Province AS Province, Stars, Price AS Price, Description, Image FROM hotels");
         res.json(results);
     } catch (err) { res.status(500).send(err); }
 });
