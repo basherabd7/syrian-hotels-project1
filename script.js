@@ -1,4 +1,4 @@
-// القائمة الكاملة والنجوم أرقام ليعمل الفلتر الخاص بك
+// مصفوفة الفنادق مع بيانات رقمية صحيحة لضمان عمل الفلتر
 let hotels = [
   { Id: 1, Name: "فندق داماروز", Province: "دمشق", Stars: 5, Price: 120, Description: "من أرقى فنادق العاصمة، يتميز بإطلالة بانورامية.", Image: "img/داماروز.jpg" },
   { Id: 2, Name: "فندق زنوبيا", Province: "اللاذقية", Stars: 3, Price: 80, Description: "قريب من البحر في مدينة اللاذقية الساحرة.", Image: "img/زنوبيا.jpg" },
@@ -15,9 +15,9 @@ let hotels = [
   { Id: 13, Name: "فندق الصالح", Province: "طرطوس", Stars: 4, Price: 110, Description: "تجربة فاخرة مع مسبح داخلي وإطلالة خلابة.", Image: "img/الصالح.jpg" }
 ];
 
-// جلب البيانات من السيرفر
+// دالة جلب البيانات من السيرفر وتحديث القائمة
 async function fetchHotels() {
-    displayHotels(hotels); // عرض البيانات المحلية كاحتياط
+    displayHotels(hotels); 
     try {
         const response = await fetch('/hotels');
         const dbData = await response.json();
@@ -27,16 +27,18 @@ async function fetchHotels() {
                 Name: h.name || h.Name,
                 Province: h.province || h.Province,
                 Stars: parseInt(h.stars || h.Stars),
-                Price: h.price || h.Price,
+                Price: parseFloat(h.price || h.Price),
                 Description: h.description || h.Description,
                 Image: h.image || h.Image
             }));
             displayHotels(hotels);
         }
-    } catch (e) { console.log("استخدام القائمة المحلية حالياً"); }
+    } catch (e) {
+        console.log("العمل حالياً على البيانات المحلية");
+    }
 }
 
-// عرض الفنادق والفلترة
+// دالة عرض الفنادق في الصفحة
 function displayHotels(data) {
     const list = document.getElementById("hotelsList");
     if (!list) return;
@@ -48,8 +50,8 @@ function displayHotels(data) {
             <img src="${h.Image}" class="hotel-img">
             <div class="hotel-info">
                 <h3>${h.Name}</h3>
-                <p>النجوم: ${h.Stars}</p> 
-                <p>📍 ${h.Province} | 💰 ${h.Price} دولار</p>
+                <p>النجوم: ${h.Stars}</p>
+                <p>المحافظة: ${h.Province} | السعر: ${h.Price} دولار</p>
                 <p class="desc">${h.Description}</p>
                 <button class="btn" onclick='openBookingModal(${JSON.stringify(h)})'>احجز الآن</button>
             </div>`;
@@ -57,16 +59,65 @@ function displayHotels(data) {
     });
 }
 
-// دالة البحث والفلترة (تعتمد على Stars كأرقام)
+// دالة الفلترة الصحيحة حسب المحافظة والنجوم
 function filterHotels() {
     const province = document.getElementById("filterProvince").value;
     const stars = document.getElementById("filterStars").value;
     const filtered = hotels.filter(h => {
-        return (province === "" || h.Province === province) && 
-               (stars === "" || h.Stars.toString() === stars);
+        const matchProvince = (province === "" || h.Province === province);
+        const matchStars = (stars === "" || h.Stars.toString() === stars);
+        return matchProvince && matchStars;
     });
     displayHotels(filtered);
 }
 
-// تشغيل النظام
-fetchHotels();
+// --- وظائف نافذة الحجز (المودال) ---
+
+function openBookingModal(hotel) {
+    const modal = document.getElementById("bookingModal");
+    if (!modal) return;
+    
+    document.getElementById("modalHotelName").innerText = hotel.Name;
+    document.getElementById("hotelIdInput").value = hotel.Id;
+    document.getElementById("pricePerNight").value = hotel.Price;
+    
+    modal.style.display = "flex";
+}
+
+function closeModal() {
+    const modal = document.getElementById("bookingModal");
+    if (modal) modal.style.display = "none";
+}
+
+// دالة إرسال الحجز للسيرفر
+async function submitBooking(event) {
+    event.preventDefault();
+    const bookingData = {
+        hotelId: document.getElementById("hotelIdInput").value,
+        fullName: document.getElementById("fullName").value,
+        email: document.getElementById("email").value,
+        checkIn: document.getElementById("checkIn").value,
+        checkOut: document.getElementById("checkOut").value,
+        totalPrice: document.getElementById("pricePerNight").value
+    };
+
+    try {
+        const response = await fetch('/bookings', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(bookingData)
+        });
+        const result = await response.json();
+        if (result.success) {
+            alert("تم الحجز بنجاح رقم الحجز هو " + result.id);
+            closeModal();
+        } else {
+            alert("حدث خطأ أثناء الحجز");
+        }
+    } catch (error) {
+        alert("فشل الاتصال بالسيرفر");
+    }
+}
+
+// تشغيل جلب البيانات عند تحميل الصفحة
+window.onload = fetchHotels;
