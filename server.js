@@ -14,10 +14,8 @@ const db = mysql.createPool({
     uri: "mysql://root:wrJQGvQoHMzcGtatSECXmBUWcSyOonBU@yamabiko.proxy.rlwy.net:31652/railway",
     waitForConnections: true,
     connectionLimit: 10,
-    queueLimit: 0,
     connectTimeout: 30000 
 });
-
 // اختبار الاتصال عند الإقلاع
 db.getConnection((err, connection) => {
     if (err) {
@@ -85,3 +83,4 @@ app.post('/ask-ai', async (req, res) => {
 // 6. تشغيل السيرفر
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => console.log(`🚀 السيرفر يعمل على المنفذ ${PORT}`));
+
