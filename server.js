@@ -11,24 +11,20 @@ app.use(express.static(path.join(__dirname)));
 
 // بيانات الاتصال الخارجي (Public) من صورتك رقم 8888
 // الربط المباشر باستخدام القيم الخارجية من Railway
+// الربط باستخدام الرابط العام (Public URL) الظاهر في صورتك 8888
 const db = mysql.createPool({
-    host: 'yamabiko.proxy.rlwy.net', 
-    user: 'root',
-    password: 'wrJQGvQoHMzcGtatSECXmBUWcSyOonBU',
-    database: 'railway',
-    port: 31652, 
+    uri: "mysql://root:wrJQGvQoHMzcGtatSECXmBUWcSyOonBU@yamabiko.proxy.rlwy.net:31652/railway",
     waitForConnections: true,
     connectionLimit: 10,
-    queueLimit: 0,
-    connectTimeout: 20000 // زيادة وقت الانتظار لضمان الاتصال العابر للشبكات
+    queueLimit: 0
 });
 
 // اختبار الاتصال عند الإقلاع
 db.getConnection((err, connection) => {
     if (err) {
-        console.error('❌ فشل الاتصال النهائي:', err.message);
+        console.error('❌ خطأ في الاتصال:', err.message);
     } else {
-        console.log('✅ تم الاتصال بنجاح عبر البوابة الخارجية Proxy!');
+        console.log('✅ تم الاتصال بنجاح! الموقع جاهز للحجز الآن.');
         connection.release();
     }
 });
@@ -78,4 +74,5 @@ app.post('/ask-ai', async (req, res) => {
 
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => console.log(`🚀 السيرفر يعمل على المنفذ ${PORT}`));
+
 
