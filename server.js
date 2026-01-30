@@ -9,63 +9,47 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname)));
 
-// إعداد الاتصال بـ Supabase (باستخدام رابط الـ Pooler الذي وضعته)
+// الإعداد المصلح لتجاوز خطأ SELF_SIGNED_CERT_IN_CHAIN
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
-    ssl: { rejectUnauthorized: false },
+    ssl: {
+        // هذا السطر هو الحل الجذري لمشكلة الشهادة الأمنية
+        rejectUnauthorized: false 
+    },
     connectionTimeoutMillis: 10000,
 });
 
-// اختبار الاتصال فور التشغيل
+// اختبار الاتصال الابتدائي
 pool.connect((err, client, release) => {
     if (err) {
-        console.error('❌ خطأ في الاتصال الابتدائي:', err.message);
+        console.error('❌ عطل في الاتصال:', err.message);
     } else {
-        console.log('✅ تم الاتصال بـ Supabase بنجاح!');
+        console.log('✅ السيرفر متصل بـ Supabase وجاهز للحجز!');
         release();
     }
 });
 
-// --- إضافة حجز جديد مع كشف أعطال دقيق ---
+// --- وظيفة الحجز المضمونة ---
 app.post("/bookings", async (req, res) => {
-    // 1. طباعة البيانات التي أرسلها المتصفح (لنرى هل هي ناقصة؟)
-    console.log("📥 بيانات الحجز الواردة:", req.body);
-
+    console.log("📥 استلام طلب حجز لـ:", req.body.fullName);
     const { hotelId, fullName, email, checkIn, checkOut, totalPrice } = req.body;
 
     try {
-        // 2. محاولة الكتابة في الجدول
         const query = `
             INSERT INTO bookings (hotelid, fullname, email, checkin, checkout, totalprice) 
             VALUES ($1, $2, $3, $4, $5, $6) RETURNING id
         `;
-        const values = [
-            hotelId || null, 
-            fullName || null, 
-            email || null, 
-            checkIn || null, 
-            checkOut || null, 
-            totalPrice || 0
-        ];
-
-        const result = await pool.query(query, values);
+        const result = await pool.query(query, [hotelId, fullName, email, checkIn, checkOut, totalPrice]);
         
-        console.log("🚀 نجح الحجز! رقم السجل في القاعدة:", result.rows[0].id);
+        console.log("🚀 تم الحجز بنجاح! المعرف:", result.rows[0].id);
         res.json({ message: "تم الحجز بنجاح واحتسابه في السجلات!" });
-
     } catch (err) {
-        // 3. طباعة الخطأ الحقيقي (هنا سنعرف العطل 100%)
-        console.error("❗ عطل في قاعدة البيانات:", err.message);
-        console.error("❗ التفاصيل الكاملة للخطأ:", err);
-
-        res.status(500).json({ 
-            error: "فشل الحجز تقنياً", 
-            details: err.message 
-        });
+        console.error("❗ خطأ في قاعدة البيانات:", err.message);
+        res.status(500).json({ error: "فشل الحجز تقنياً", details: err.message });
     }
 });
 
-// --- جلب الفنادق ---
+// --- باقي الوظائف (فنادق، تتبع، AI) ---
 app.get("/hotels", async (req, res) => {
     try {
         const results = await pool.query("SELECT * FROM hotels ORDER BY id ASC");
@@ -73,27 +57,17 @@ app.get("/hotels", async (req, res) => {
             Id: h.id, Name: h.name, Province: h.province, Stars: h.stars,
             Price: h.price, Description: h.description, Image: h.image
         })));
-    } catch (err) { 
-        console.error("❌ فشل جلب الفنادق:", err.message);
-        res.status(500).send(err.message); 
-    }
+    } catch (err) { res.status(500).send(err.message); }
 });
 
-// --- تتبع الحجوزات ---
 app.get('/my-bookings/:email', async (req, res) => {
     try {
-        const query = `
-            SELECT b.*, h.name AS hotelname 
-            FROM bookings b 
-            LEFT JOIN hotels h ON b.hotelid = h.id 
-            WHERE b.email = $1 ORDER BY b.id DESC
-        `;
+        const query = `SELECT b.*, h.name AS hotelname FROM bookings b LEFT JOIN hotels h ON b.hotelid = h.id WHERE b.email = $1 ORDER BY b.id DESC`;
         const results = await pool.query(query, [req.params.email]);
         res.json(results.rows);
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// --- الشات بوت ---
 app.post('/ask-ai', async (req, res) => {
     try {
         const response = await axios.post("https://api.groq.com/openai/v1/chat/completions", {
