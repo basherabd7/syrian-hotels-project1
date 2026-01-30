@@ -9,23 +9,23 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname)));
 
-// بيانات الاتصال الخارجي (Public) من صورتك رقم 8888
-// الربط المباشر باستخدام القيم الخارجية من Railway
-// الربط باستخدام الرابط العام (Public URL) الظاهر في صورتك 8888
-// الربط باستخدام الرابط العام (Public URL) الظاهر في صورتك 8888
 const db = mysql.createPool({
-    uri: "mysql://root:wrJQGvQoHMzcGtatSECXmBUWcSyOonBU@yamabiko.proxy.rlwy.net:31652/railway",
+    host: process.env.MYSQLHOST,             // سيقرأ: yamabiko.proxy.rlwy.net
+    user: process.env.MYSQLUSER,             // سيقرأ: root
+    password: process.env.MYSQL_ROOT_PASSWORD, // سيقرأ رمز المرور الطويل
+    database: process.env.MYSQLDATABASE,     // سيقرأ: railway
+    port: process.env.MYSQLPORT || 31652,    // سيقرأ: 31652
     waitForConnections: true,
     connectionLimit: 10,
-    queueLimit: 0
+    connectTimeout: 10000 
 });
 
-// اختبار الاتصال عند الإقلاع
+// رسالة التأكيد في السجلات (Logs)
 db.getConnection((err, connection) => {
     if (err) {
-        console.error('❌ خطأ في الاتصال:', err.message);
+        console.error('❌ فشل الاتصال: تأكد من إضافة MYSQLHOST في Render', err.message);
     } else {
-        console.log('✅ تم الاتصال بنجاح! الموقع جاهز للحجز الآن.');
+        console.log('✅ متصل بنجاح بقاعدة بيانات ريلوي! الموقع جاهز الآن.');
         connection.release();
     }
 });
@@ -74,6 +74,7 @@ app.post('/ask-ai', async (req, res) => {
 
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => console.log(`🚀 السيرفر يعمل على المنفذ ${PORT}`));
+
 
 
 
