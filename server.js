@@ -11,14 +11,14 @@ app.use(express.static(path.join(__dirname)));
 
 // إعداد الاتصال باستخدام المتغيرات التي أضفتها في Render
 const db = mysql.createPool({
-    host: process.env.MYSQLHOST,
-    user: process.env.MYSQLUSER,
-    password: process.env.MYSQL_ROOT_PASSWORD,
-    database: process.env.MYSQLDATABASE,
-    port: process.env.MYSQLPORT,
+    // استخدم العنوان العام (Public) من ريلوي
+    host: 'yamabiko.proxy.rlwy.net', 
+    user: 'root',
+    password: 'wrJQGvQoHMzcGtatSECXmBUWcSyOonBU',
+    database: 'railway',
+    port: 31652, // المنفذ الخارجي من صورتك
     waitForConnections: true,
-    connectionLimit: 10,
-    queueLimit: 0
+    connectionLimit: 10
 });
 
 // اختبار الاتصال بنجاح عند تشغيل السيرفر
@@ -90,3 +90,4 @@ const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => {
     console.log(`🚀 السيرفر يعمل الآن على المنفذ ${PORT}`);
 });
+
