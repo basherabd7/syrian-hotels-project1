@@ -1,5 +1,5 @@
 const express = require("express");
-const { Pool } = require("pg"); // استخدام مكتبة pg للربط مع Supabase
+const { Pool } = require("pg"); // مكتبة Postgres الخاصة بـ Supabase
 const axios = require("axios");
 const cors = require("cors");
 const path = require("path");
@@ -9,26 +9,29 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname)));
 
-// إعداد الاتصال بـ Supabase باستخدام DATABASE_URL من إعدادات Render
+// إعداد الاتصال بـ Supabase مع تحسينات الاستقرار لمنع أخطاء الشبكة
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
-    ssl: { rejectUnauthorized: false }
+    ssl: { rejectUnauthorized: false },
+    connectionTimeoutMillis: 10000, // مهلة 10 ثوانٍ للاتصال
 });
 
-// اختبار الاتصال فور تشغيل السيرفر للتأكد من الرابط
-pool.connect((err, client, release) => {
-    if (err) {
-        return console.error('خطأ في الاتصال بـ Supabase:', err.stack);
+// وظيفة اختبار الاتصال الفوري (ستظهر في Logs الريندر)
+const checkDatabaseConnection = async () => {
+    try {
+        const client = await pool.connect();
+        console.log("✅ مبروك: السيرفر متصل الآن بـ Supabase بنجاح!");
+        client.release();
+    } catch (err) {
+        console.error("❌ خطأ حرج في الاتصال:", err.message);
     }
-    console.log('تم الاتصال بقاعدة بيانات Supabase بنجاح!');
-    release();
-});
+};
+checkDatabaseConnection();
 
-// --- 1. جلب الفنادق (متوافق مع الـ 13 فندق التي أضفتها) ---
+// --- 1. جلب الفنادق (الـ 13 فندق التي أضفتها) ---
 app.get("/hotels", async (req, res) => {
     try {
         const results = await pool.query("SELECT * FROM hotels ORDER BY id ASC");
-        // تحويل الأسماء لتتوافق مع ملفات الـ HTML/JS الخاصة بك
         const formatted = results.rows.map(h => ({
             Id: h.id, 
             Name: h.name, 
@@ -44,9 +47,8 @@ app.get("/hotels", async (req, res) => {
     }
 });
 
-// --- 2. إضافة حجز جديد (حل مشكلة "فشل الحجز") ---
+// --- 2. إضافة حجز جديد (مع معالجة الأسماء الكبيرة والصغيرة) ---
 app.post("/bookings", async (req, res) => {
-    // استلام البيانات بمرونة (سواء بدأت بحرف كبير أو صغير)
     const hotelId = req.body.hotelId || req.body.HotelId;
     const fullName = req.body.fullName || req.body.FullName;
     const email = req.body.email || req.body.Email;
@@ -55,20 +57,19 @@ app.post("/bookings", async (req, res) => {
     const totalPrice = req.body.totalPrice || req.body.TotalPrice;
 
     try {
-        // كتابة أسماء الأعمدة بالأحرف الصغيرة لتطابق Supabase Schema
         const query = `
             INSERT INTO bookings (hotelid, fullname, email, checkin, checkout, totalprice) 
             VALUES ($1, $2, $3, $4, $5, $6)
         `;
         await pool.query(query, [hotelId, fullName, email, checkIn, checkOut, totalPrice]);
         res.json({ message: "تم الحجز بنجاح" });
-    } catch (err) { 
-        console.error("خطأ قاعدة البيانات:", err.message);
-        res.status(500).json({ error: "فشل الحجز: " + err.message }); 
+    } catch (err) {
+        console.error("خطأ أثناء تنفيذ الحجز:", err.message);
+        res.status(500).json({ error: "فشل الحجز: " + err.message });
     }
 });
 
-// --- 3. تتبع حجوزات مستخدم محدد ---
+// --- 3. تتبع حجوزات المستخدم ---
 app.get('/my-bookings/:email', async (req, res) => {
     try {
         const query = `
@@ -85,7 +86,7 @@ app.get('/my-bookings/:email', async (req, res) => {
     }
 });
 
-// --- 4. إلغاء الحجز ---
+// --- 4. إلغاء حجز ---
 app.delete('/cancel-booking/:id', async (req, res) => {
     try { 
         await pool.query("DELETE FROM bookings WHERE id = $1", [req.params.id]); 
@@ -95,10 +96,9 @@ app.delete('/cancel-booking/:id', async (req, res) => {
     }
 });
 
-// --- 5. الشات بوت الذكي ---
+// --- 5. الشات بوت الذكي (AI) ---
 app.post('/ask-ai', async (req, res) => {
     const { prompt } = req.body;
-    const GROQ_API_KEY = process.env.GROQ_API_KEY;
     try {
         const response = await axios.post("https://api.groq.com/openai/v1/chat/completions", {
             model: "llama-3.3-70b-versatile",
@@ -106,15 +106,15 @@ app.post('/ask-ai', async (req, res) => {
                 { role: "system", content: "أنت مساعد سياحي خبير في سوريا. أجب باللغة العربية." },
                 { role: "user", content: prompt }
             ]
-        }, { headers: { "Authorization": `Bearer ${GROQ_API_KEY}` } });
+        }, { headers: { "Authorization": `Bearer ${process.env.GROQ_API_KEY}` } });
         res.json({ reply: response.data.choices[0].message.content });
     } catch (error) { 
-        res.status(500).json({ reply: "عذراً، الشات بوت غير متاح حالياً." }); 
+        res.status(500).json({ reply: "عذراً، الشات بوت مشغول حالياً." }); 
     }
 });
 
-// تشغيل السيرفر
-const PORT = process.env.PORT || 3000;
+// تشغيل السيرفر على المنفذ المخصص من ريندر
+const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => {
     console.log(`السيرفر يعمل الآن على المنفذ ${PORT}`);
 });
