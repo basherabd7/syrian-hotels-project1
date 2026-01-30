@@ -1,5 +1,5 @@
 const express = require("express");
-const { Pool } = require("pg"); // استخدام مكتبة pg لـ Supabase
+const { Pool } = require("pg");
 const axios = require("axios");
 const cors = require("cors");
 const path = require("path");
@@ -9,17 +9,15 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname)));
 
-// إعداد الاتصال بـ Supabase (PostgreSQL)
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
     ssl: { rejectUnauthorized: false }
 });
 
-// --- جلب الفنادق ---
+// --- جلب الفنادق  ---
 app.get("/hotels", async (req, res) => {
     try {
-        const results = await pool.query("SELECT * FROM hotels");
-        // تحويل الأسماء لتتوافق مع الـ Frontend إذا كانت صغيرة في قاعدة البيانات
+        const results = await pool.query("SELECT * FROM hotels ORDER BY id ASC");
         const formatted = results.rows.map(h => ({
             Id: h.id, Name: h.name, Province: h.province, Stars: h.stars,
             Price: h.price, Description: h.description, Image: h.image
@@ -28,23 +26,30 @@ app.get("/hotels", async (req, res) => {
     } catch (err) { res.status(500).send(err.message); }
 });
 
-// --- إضافة حجز جديد ---
+// --- إضافة حجز جديد  ---
 app.post("/bookings", async (req, res) => {
-    const { hotelId, fullName, email, checkIn, checkOut, totalPrice } = req.body;
+    // استلام البيانات بأي صيغة (كبيرة أو صغيرة) لمنع الخطأ
+    const hotelId = req.body.hotelId || req.body.HotelId;
+    const fullName = req.body.fullName || req.body.FullName;
+    const email = req.body.email || req.body.Email;
+    const checkIn = req.body.checkIn || req.body.CheckIn;
+    const checkOut = req.body.checkOut || req.body.CheckOut;
+    const totalPrice = req.body.totalPrice || req.body.TotalPrice;
+
     try {
         const query = `
             INSERT INTO bookings (hotelid, fullname, email, checkin, checkout, totalprice) 
             VALUES ($1, $2, $3, $4, $5, $6)
         `;
         await pool.query(query, [hotelId, fullName, email, checkIn, checkOut, totalPrice]);
-        res.json({ message: "تم الحجز بنجاح في قاعدة البيانات الجديدة" });
+        res.json({ message: "تم الحجز بنجاح" });
     } catch (err) { 
-        console.error(err);
-        res.status(500).json({ error: "فشل الحجز: " + err.message }); 
+        console.error("Database Error:", err.message);
+        res.status(500).json({ error: "فشل الحجز تقنياً: " + err.message }); 
     }
 });
 
-// --- تتبع الحجوزات ---
+// --- تتبع الحجوزات (مع JOIN) ---
 app.get('/my-bookings/:email', async (req, res) => {
     try {
         const query = `
