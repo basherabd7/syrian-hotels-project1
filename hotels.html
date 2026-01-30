@@ -7,21 +7,19 @@
     <link rel="stylesheet" href="style/syle.css">
 </head>
 <body>
-    <!-- الناف بار -->
     <nav class="navbar">
         <div class="logo">Syrian Hotels</div>
         <ul class="nav-links">
             <li><a href="index.html">الرئيسية</a></li>
             <li><a href="hotels.html">الفنادق</a></li>
-            <li><a href="explore.html" class=>استكشف سوريا</a></li>
+            <li><a href="explore.html">استكشف سوريا</a></li>
         </ul>
     </nav>
 
-    <!-- فلتر بحث مشان تصفي النتيجة -->
     <section class="filters">
         <h2>ابحث عن فندقك</h2>
         <div class="filter-container">
-            <select id="provinceFilter">
+            <select id="filterProvince">
                 <option value="">اختر المحافظة</option>
                 <option value="دمشق">دمشق</option>
                 <option value="اللاذقية">اللاذقية</option>
@@ -29,53 +27,47 @@
                 <option value="حلب">حلب</option>
             </select>
 
-            <select id="starsFilter">
+            <select id="filterStars">
                 <option value="">عدد النجوم</option>
                 <option value="3">3 نجوم</option>
                 <option value="4">4 نجوم</option>
                 <option value="5">5 نجوم</option>
             </select>
 
-            <input type="number" id="priceFilter" placeholder="الحد الأقصى للسعر">
-
-            <button id="filterBtn" class="btn">تصفية النتائج</button>
+            <button onclick="filterHotels()" class="btn">تصفية النتائج</button>
         </div>
     </section>
 
-    <!-- عرض الفنادق -->
     <section class="hotels-list" id="hotelsList">
-        <!-- تُضاف الكاردات من JS -->
-    </section>
+        </section>
 
-    <!--  النافذة المنبثقة (نموذج الحجز) -->
-    <!--  المودال  -->
-<div id="bookingModal" class="modal">
-    <div class="modal-content">
-        <span class="close">&times;</span>
-        <h3 id="modalHotelName"></h3>
-        <form id="bookingForm">
-            <label>الاسم الكامل:</label>
-            <input type="text" id="userName" required>
+    <div id="bookingModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h3 id="modalHotelName"></h3>
+            <form id="bookingForm" onsubmit="submitBooking(event)">
+                <input type="hidden" id="hotelIdInput">
+                
+                <label>الاسم الكامل:</label>
+                <input type="text" id="fullName" required>
 
-            
-           <input type="email" id="userEmail" placeholder="البريد الإلكتروني" required>
+                <label>البريد الإلكتروني:</label>
+                <input type="email" id="email" placeholder="example@mail.com" required>
 
-            <label>تاريخ الوصول:</label>
-            <input type="date" id="checkIn" required>
+                <label>تاريخ الوصول:</label>
+                <input type="date" id="checkIn" required>
 
-            <label>تاريخ المغادرة:</label>
-            <input type="date" id="checkOut" required>
+                <label>تاريخ المغادرة:</label>
+                <input type="date" id="checkOut" required>
 
-            <label>السعر الكلي:</label>
-            <input type="text" id="totalPrice" readonly>
+                <label>سعر الليلة (دولار):</label>
+                <input type="text" id="pricePerNight" readonly>
 
-            <button type="submit" class="btn">تأكيد الحجز</button>
-        </form>
+                <button type="submit" class="btn">تأكيد الحجز</button>
+            </form>
+        </div>
     </div>
-</div>
 
-
-    <!--  اخر الصفحة -->
     <footer>
         <p>مشروع طلابي حجز فنادق في سوريا</p>
     </footer>
