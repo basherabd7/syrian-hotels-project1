@@ -12,6 +12,7 @@ app.use(express.static(path.join(__dirname)));
 // بيانات الاتصال الخارجي (Public) من صورتك رقم 8888
 // الربط المباشر باستخدام القيم الخارجية من Railway
 // الربط باستخدام الرابط العام (Public URL) الظاهر في صورتك 8888
+// الربط باستخدام الرابط العام (Public URL) الظاهر في صورتك 8888
 const db = mysql.createPool({
     uri: "mysql://root:wrJQGvQoHMzcGtatSECXmBUWcSyOonBU@yamabiko.proxy.rlwy.net:31652/railway",
     waitForConnections: true,
@@ -28,7 +29,6 @@ db.getConnection((err, connection) => {
         connection.release();
     }
 });
-
 // جلب الفنادق
 app.get("/hotels", (req, res) => {
     db.query("SELECT * FROM hotels ORDER BY id ASC", (err, results) => {
@@ -74,5 +74,6 @@ app.post('/ask-ai', async (req, res) => {
 
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => console.log(`🚀 السيرفر يعمل على المنفذ ${PORT}`));
+
 
 
