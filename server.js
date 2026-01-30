@@ -9,23 +9,63 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname)));
 
-// إعداد الاتصال بـ Supabase (تأكد من استخدام رابط الـ Pooler في Render)
+// إعداد الاتصال بـ Supabase (باستخدام رابط الـ Pooler الذي وضعته)
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
     ssl: { rejectUnauthorized: false },
-    max: 20,
-    idleTimeoutMillis: 30000,
-    connectionTimeoutMillis: 5000,
+    connectionTimeoutMillis: 10000,
 });
 
-// اختبار الاتصال عند التشغيل
+// اختبار الاتصال فور التشغيل
 pool.connect((err, client, release) => {
-    if (err) return console.error('❌ فشل الاتصال بـ Supabase:', err.message);
-    console.log('✅ السيرفر متصل بـ Supabase وجاهز للعمل!');
-    release();
+    if (err) {
+        console.error('❌ خطأ في الاتصال الابتدائي:', err.message);
+    } else {
+        console.log('✅ تم الاتصال بـ Supabase بنجاح!');
+        release();
+    }
 });
 
-// 1. جلب الفنادق
+// --- إضافة حجز جديد مع كشف أعطال دقيق ---
+app.post("/bookings", async (req, res) => {
+    // 1. طباعة البيانات التي أرسلها المتصفح (لنرى هل هي ناقصة؟)
+    console.log("📥 بيانات الحجز الواردة:", req.body);
+
+    const { hotelId, fullName, email, checkIn, checkOut, totalPrice } = req.body;
+
+    try {
+        // 2. محاولة الكتابة في الجدول
+        const query = `
+            INSERT INTO bookings (hotelid, fullname, email, checkin, checkout, totalprice) 
+            VALUES ($1, $2, $3, $4, $5, $6) RETURNING id
+        `;
+        const values = [
+            hotelId || null, 
+            fullName || null, 
+            email || null, 
+            checkIn || null, 
+            checkOut || null, 
+            totalPrice || 0
+        ];
+
+        const result = await pool.query(query, values);
+        
+        console.log("🚀 نجح الحجز! رقم السجل في القاعدة:", result.rows[0].id);
+        res.json({ message: "تم الحجز بنجاح واحتسابه في السجلات!" });
+
+    } catch (err) {
+        // 3. طباعة الخطأ الحقيقي (هنا سنعرف العطل 100%)
+        console.error("❗ عطل في قاعدة البيانات:", err.message);
+        console.error("❗ التفاصيل الكاملة للخطأ:", err);
+
+        res.status(500).json({ 
+            error: "فشل الحجز تقنياً", 
+            details: err.message 
+        });
+    }
+});
+
+// --- جلب الفنادق ---
 app.get("/hotels", async (req, res) => {
     try {
         const results = await pool.query("SELECT * FROM hotels ORDER BY id ASC");
@@ -33,33 +73,13 @@ app.get("/hotels", async (req, res) => {
             Id: h.id, Name: h.name, Province: h.province, Stars: h.stars,
             Price: h.price, Description: h.description, Image: h.image
         })));
-    } catch (err) { res.status(500).send(err.message); }
-});
-
-// 2. إضافة حجز جديد (حل مشكلة الفشل)
-app.post("/bookings", async (req, res) => {
-    const { hotelId, fullName, email, checkIn, checkOut, totalPrice } = req.body;
-    try {
-        const query = `
-            INSERT INTO bookings (hotelid, fullname, email, checkin, checkout, totalprice) 
-            VALUES ($1, $2, $3, $4, $5, $6)
-        `;
-        await pool.query(query, [
-            hotelId || req.body.HotelId, 
-            fullName || req.body.FullName, 
-            email || req.body.Email, 
-            checkIn || req.body.CheckIn, 
-            checkOut || req.body.CheckOut, 
-            totalPrice || req.body.TotalPrice
-        ]);
-        res.json({ message: "تم الحجز بنجاح" });
-    } catch (err) {
-        console.error("Booking Error:", err.message);
-        res.status(500).json({ error: "فشل الحجز: " + err.message });
+    } catch (err) { 
+        console.error("❌ فشل جلب الفنادق:", err.message);
+        res.status(500).send(err.message); 
     }
 });
 
-// 3. تتبع الحجوزات (مع دمج اسم الفندق)
+// --- تتبع الحجوزات ---
 app.get('/my-bookings/:email', async (req, res) => {
     try {
         const query = `
@@ -73,15 +93,7 @@ app.get('/my-bookings/:email', async (req, res) => {
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// 4. إلغاء حجز
-app.delete('/cancel-booking/:id', async (req, res) => {
-    try {
-        await pool.query("DELETE FROM bookings WHERE id = $1", [req.params.id]);
-        res.json({ message: "تم إلغاء الحجز بنجاح" });
-    } catch (err) { res.status(500).json({ error: err.message }); }
-});
-
-// 5. الشات بوت
+// --- الشات بوت ---
 app.post('/ask-ai', async (req, res) => {
     try {
         const response = await axios.post("https://api.groq.com/openai/v1/chat/completions", {
@@ -92,4 +104,5 @@ app.post('/ask-ai', async (req, res) => {
     } catch (error) { res.status(500).json({ reply: "عذراً، الشات بوت غير متاح." }); }
 });
 
-app.listen(process.env.PORT || 10000);
+const PORT = process.env.PORT || 10000;
+app.listen(PORT, () => console.log(`🚀 السيرفر يعمل على المنفذ ${PORT}`));
