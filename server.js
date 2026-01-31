@@ -9,7 +9,7 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname)));
 
-// إعداد الاتصال المباشر (الذي نجح معك)
+// إعداد الاتصال بريلوي (الذي نجح معك)
 const db = mysql.createPool({
     uri: "mysql://root:wrJQGvQoHMzcGtatSECXmBUWcSyOonBU@yamabiko.proxy.rlwy.net:31652/railway",
     waitForConnections: true,
@@ -26,14 +26,15 @@ db.getConnection((err, connection) => {
     }
 });
 
-// وظيفة جلب الفنادق مع الفلترة (المحافظة، النجوم، السعر)
+// وظيفة جلب الفنادق مع الفلترة (إصلاح أسماء الحقول لتطابق قاعدتك)
 app.get("/hotels", (req, res) => {
     const { location, stars, maxPrice } = req.query;
+    // نستخدم province بدلاً من location لتظهر المحافظة
     let query = "SELECT * FROM hotels WHERE 1=1";
     let params = [];
 
     if (location && location !== '') {
-        query += " AND location = ?";
+        query += " AND province = ?";
         params.push(location);
     }
     if (stars && stars !== '') {
@@ -52,20 +53,17 @@ app.get("/hotels", (req, res) => {
     });
 });
 
-// وظيفة تنفيذ الحجز (كما هي تماماً لضمان النجاح)
+// وظيفة الحجز (تعمل بنجاح ولا نغيرها)
 app.post("/bookings", (req, res) => {
     const { hotelId, fullName, email, checkIn, checkOut, totalPrice } = req.body;
     const query = "INSERT INTO bookings (hotelid, fullname, email, checkin, checkout, totalprice) VALUES (?, ?, ?, ?, ?, ?)";
     db.query(query, [hotelId, fullName, email, checkIn, checkOut, totalPrice], (err, result) => {
-        if (err) {
-            console.error("❌ خطأ حجز:", err.message);
-            return res.status(500).json({ success: false, error: err.message });
-        }
+        if (err) return res.status(500).json({ success: false, error: err.message });
         res.json({ success: true, id: result.insertId });
     });
 });
 
-// وظيفة تتبع الحجوزات (المعدلة لتطابق أسماء الحقول في القاعدة)
+// وظيفة تتبع الحجز (لتعمل في الصفحة الأولى)
 app.get('/my-bookings/:email', (req, res) => {
     const query = `
         SELECT b.*, h.name AS hotelname 
@@ -73,20 +71,19 @@ app.get('/my-bookings/:email', (req, res) => {
         LEFT JOIN hotels h ON b.hotelid = h.id 
         WHERE b.email = ? 
         ORDER BY b.id DESC`;
-                   
     db.query(query, [req.params.email], (err, results) => {
         if (err) return res.status(500).json({ error: err.message });
         res.json(results);
     });
 });
 
-// وظيفة مساعد الذكاء الاصطناعي
+// وظيفة الذكاء الاصطناعي
 app.post('/ask-ai', async (req, res) => {
     try {
         const response = await axios.post("https://api.groq.com/openai/v1/chat/completions", {
             model: "llama-3.3-70b-versatile",
             messages: [
-                { role: "system", content: "أنت مساعد سياحي خبير في سوريا. أجب باختصار وودية." },
+                { role: "system", content: "أنت مساعد سياحي في سوريا." },
                 { role: "user", content: req.body.prompt }
             ]
         }, {
@@ -94,7 +91,7 @@ app.post('/ask-ai', async (req, res) => {
         });
         res.json({ reply: response.data.choices[0].message.content });
     } catch (error) {
-        res.status(500).json({ reply: "الخدمة غير متاحة." });
+        res.status(500).json({ reply: "عذراً، الخدمة غير متاحة." });
     }
 });
 
