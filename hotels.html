@@ -19,23 +19,37 @@
     <section class="filters">
         <h2>ابحث عن فندقك</h2>
         <div class="filter-container">
-            <select id="filterProvince">
-                <option value="">اختر المحافظة</option>
+            <select id="filterProvince" onchange="filterHotels()">
+                <option value="">كل المحافظات</option>
                 <option value="دمشق">دمشق</option>
                 <option value="اللاذقية">اللاذقية</option>
                 <option value="طرطوس">طرطوس</option>
                 <option value="حلب">حلب</option>
             </select>
 
-            <select id="filterStars">
-                <option value="">عدد النجوم</option>
+            <select id="filterStars" onchange="filterHotels()">
+                <option value="">عدد النجوم (الكل)</option>
                 <option value="3">3 نجوم</option>
                 <option value="4">4 نجوم</option>
                 <option value="5">5 نجوم</option>
             </select>
 
-            <button onclick="filterHotels()" class="btn">تصفية النتائج</button>
+            <div class="price-filter">
+                <label>الحد الأقصى للسعر: <span id="priceValue">200 $</span></label>
+                <input type="range" id="priceRange" min="50" max="200" value="200" oninput="filterHotels()">
+            </div>
+
+            <button onclick="fetchHotels()" class="btn">تحديث القائمة</button>
         </div>
+    </section>
+
+    <section class="tracking-section">
+        <h3>تتبع حجزك السابق</h3>
+        <div class="track-container">
+            <input type="email" id="trackEmail" placeholder="أدخل بريدك الإلكتروني المستخدم في الحجز">
+            <button onclick="trackMyBookings()" class="btn">بحث عن حجوزاتي</button>
+        </div>
+        <div id="trackingResults" class="tracking-results"></div>
     </section>
 
     <section class="hotels-list" id="hotelsList">
@@ -63,13 +77,13 @@
                 <label>سعر الليلة (دولار):</label>
                 <input type="text" id="pricePerNight" readonly>
 
-                <button type="submit" class="btn">تأكيد الحجز</button>
+                <button type="submit" class="btn">تأكيد الحجز الآن</button>
             </form>
         </div>
     </div>
 
     <footer>
-        <p>مشروع طلابي حجز فنادق في سوريا</p>
+        <p>مشروع طلابي - حجز فنادق في سوريا &copy; 2026</p>
     </footer>
 
     <script src="script.js"></script>
