@@ -16,32 +16,29 @@
         </ul>
     </nav>
 
-    <section class="filters">
-        <h2>ابحث عن فندقك</h2>
-        <div class="filter-container">
-            <select id="filterProvince" onchange="filterHotels()">
-                <option value="">كل المحافظات</option>
-                <option value="دمشق">دمشق</option>
-                <option value="اللاذقية">اللاذقية</option>
-                <option value="طرطوس">طرطوس</option>
-                <option value="حلب">حلب</option>
-            </select>
+   <section class="filters">
+    <h2>ابحث عن فندقك</h2>
+    <div class="filter-container">
+        <select id="filterProvince">
+            <option value="">كل المحافظات</option>
+            <option value="دمشق">دمشق</option>
+            <option value="اللاذقية">اللاذقية</option>
+            <option value="طرطوس">طرطوس</option>
+            <option value="حلب">حلب</option>
+        </select>
 
-            <select id="filterStars" onchange="filterHotels()">
-                <option value="">عدد النجوم (الكل)</option>
-                <option value="3">3 نجوم</option>
-                <option value="4">4 نجوم</option>
-                <option value="5">5 نجوم</option>
-            </select>
+        <select id="filterStars">
+            <option value="">عدد النجوم</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+        </select>
 
-            <div class="price-filter">
-                <label>الحد الأقصى للسعر: <span id="priceValue">200 $</span></label>
-                <input type="range" id="priceRange" min="50" max="200" value="200" oninput="filterHotels()">
-            </div>
+        <input type="number" id="filterPrice" placeholder="أقصى سعر (دولار)" style="padding:10px; border-radius:5px; border:1px solid #ccc;">
 
-            <button onclick="fetchHotels()" class="btn">تحديث القائمة</button>
-        </div>
-    </section>
+        <button onclick="fetchHotels()" class="btn">تصفية النتائج</button>
+    </div>
+</section>
 
     <section class="tracking-section">
         <h3>تتبع حجزك السابق</h3>
@@ -89,3 +86,4 @@
     <script src="script.js"></script>
 </body>
 </html>
+
