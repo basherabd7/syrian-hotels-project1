@@ -16,37 +16,28 @@
         </ul>
     </nav>
 
-   <section class="filters">
-    <h2>ابحث عن فندقك</h2>
-    <div class="filter-container">
-        <select id="filterProvince">
-            <option value="">كل المحافظات</option>
-            <option value="دمشق">دمشق</option>
-            <option value="اللاذقية">اللاذقية</option>
-            <option value="طرطوس">طرطوس</option>
-            <option value="حلب">حلب</option>
-        </select>
+    <section class="filters">
+        <h2>ابحث عن فندقك</h2>
+        <div class="filter-container">
+            <select id="filterProvince">
+                <option value="">كل المحافظات</option>
+                <option value="دمشق">دمشق</option>
+                <option value="اللاذقية">اللاذقية</option>
+                <option value="طرطوس">طرطوس</option>
+                <option value="حلب">حلب</option>
+            </select>
 
-        <select id="filterStars">
-            <option value="">عدد النجوم</option>
-            <option value="3">3</option>
-            <option value="4">4</option>
-            <option value="5">5</option>
-        </select>
+            <select id="filterStars">
+                <option value="">عدد النجوم</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+            </select>
 
-        <input type="number" id="filterPrice" placeholder="أقصى سعر (دولار)" style="padding:10px; border-radius:5px; border:1px solid #ccc;">
+            <input type="number" id="filterPrice" placeholder="أقصى سعر (دولار)" style="padding:10px; border-radius:5px; border:1px solid #ccc;">
 
-        <button onclick="fetchHotels()" class="btn">تصفية النتائج</button>
-    </div>
-</section>
-
-    <section class="tracking-section">
-        <h3>تتبع حجزك السابق</h3>
-        <div class="track-container">
-            <input type="email" id="trackEmail" placeholder="أدخل بريدك الإلكتروني المستخدم في الحجز">
-            <button onclick="trackMyBookings()" class="btn">بحث عن حجوزاتي</button>
+            <button onclick="fetchHotels()" class="btn">تصفية النتائج</button>
         </div>
-        <div id="trackingResults" class="tracking-results"></div>
     </section>
 
     <section class="hotels-list" id="hotelsList">
@@ -58,32 +49,25 @@
             <h3 id="modalHotelName"></h3>
             <form id="bookingForm" onsubmit="submitBooking(event)">
                 <input type="hidden" id="hotelIdInput">
-                
                 <label>الاسم الكامل:</label>
                 <input type="text" id="fullName" required>
-
                 <label>البريد الإلكتروني:</label>
-                <input type="email" id="email" placeholder="example@mail.com" required>
-
+                <input type="email" id="email" required>
                 <label>تاريخ الوصول:</label>
                 <input type="date" id="checkIn" required>
-
                 <label>تاريخ المغادرة:</label>
                 <input type="date" id="checkOut" required>
-
-                <label>سعر الليلة (دولار):</label>
+                <label>سعر الليلة:</label>
                 <input type="text" id="pricePerNight" readonly>
-
-                <button type="submit" class="btn">تأكيد الحجز الآن</button>
+                <button type="submit" class="btn">تأكيد الحجز</button>
             </form>
         </div>
     </div>
 
     <footer>
-        <p>مشروع طلابي - حجز فنادق في سوريا &copy; 2026</p>
+        <p>مشروع طلابي حجز فنادق في سوريا</p>
     </footer>
 
     <script src="script.js"></script>
 </body>
 </html>
-
