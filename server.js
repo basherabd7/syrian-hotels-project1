@@ -9,7 +9,7 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname)));
 
-// 1. الاتصال المباشر الثابت (لم أغير فيه شيء لضمان بقاء الحجز يعمل)
+// إعداد الاتصال المباشر (الذي نجح معك)
 const db = mysql.createPool({
     uri: "mysql://root:wrJQGvQoHMzcGtatSECXmBUWcSyOonBU@yamabiko.proxy.rlwy.net:31652/railway",
     waitForConnections: true,
@@ -26,34 +26,33 @@ db.getConnection((err, connection) => {
     }
 });
 
-// 2. وظيفة جلب الفنادق مع تفعيل الفلترة (المحافظة، النجوم، السعر)
+// وظيفة جلب الفنادق مع الفلترة (المحافظة، النجوم، السعر)
 app.get("/hotels", (req, res) => {
     const { location, stars, maxPrice } = req.query;
     let query = "SELECT * FROM hotels WHERE 1=1";
     let params = [];
 
-    if (location && location !== 'all') {
+    if (location && location !== '') {
         query += " AND location = ?";
         params.push(location);
     }
-    if (stars && stars !== 'all') {
+    if (stars && stars !== '') {
         query += " AND stars = ?";
         params.push(stars);
     }
-    if (maxPrice) {
+    if (maxPrice && maxPrice !== '') {
         query += " AND price <= ?";
-        params.push(maxPrice);
+        params.push(parseFloat(maxPrice));
     }
 
     query += " ORDER BY id ASC";
-
     db.query(query, params, (err, results) => {
         if (err) return res.status(500).json({ error: err.message });
         res.json(results);
     });
 });
 
-// 3. وظيفة تنفيذ الحجز (بقيت كما هي لأنها تعمل بنجاح)
+// وظيفة تنفيذ الحجز (كما هي تماماً لضمان النجاح)
 app.post("/bookings", (req, res) => {
     const { hotelId, fullName, email, checkIn, checkOut, totalPrice } = req.body;
     const query = "INSERT INTO bookings (hotelid, fullname, email, checkin, checkout, totalprice) VALUES (?, ?, ?, ?, ?, ?)";
@@ -66,9 +65,8 @@ app.post("/bookings", (req, res) => {
     });
 });
 
-// 4. وظيفة تتبع الحجوزات (تم إصلاح الربط مع جدول الفنادق)
+// وظيفة تتبع الحجوزات (المعدلة لتطابق أسماء الحقول في القاعدة)
 app.get('/my-bookings/:email', (req, res) => {
-    // تم تعديل h.Name و h.Id لتطابق الأسماء في قاعدة بياناتك بدقة
     const query = `
         SELECT b.*, h.name AS hotelname 
         FROM bookings b 
@@ -77,15 +75,12 @@ app.get('/my-bookings/:email', (req, res) => {
         ORDER BY b.id DESC`;
                    
     db.query(query, [req.params.email], (err, results) => {
-        if (err) {
-            console.error("❌ خطأ تتبع:", err.message);
-            return res.status(500).json({ error: err.message });
-        }
+        if (err) return res.status(500).json({ error: err.message });
         res.json(results);
     });
 });
 
-// 5. وظيفة مساعد الذكاء الاصطناعي (كما هي تماماً)
+// وظيفة مساعد الذكاء الاصطناعي
 app.post('/ask-ai', async (req, res) => {
     try {
         const response = await axios.post("https://api.groq.com/openai/v1/chat/completions", {
@@ -99,7 +94,7 @@ app.post('/ask-ai', async (req, res) => {
         });
         res.json({ reply: response.data.choices[0].message.content });
     } catch (error) {
-        res.status(500).json({ reply: "عذراً، خدمة الذكاء الاصطناعي غير متاحة حالياً." });
+        res.status(500).json({ reply: "الخدمة غير متاحة." });
     }
 });
 
